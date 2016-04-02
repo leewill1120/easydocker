@@ -10,64 +10,21 @@ html
 	body
 		button.btn.btn-success(data-toggle='modal', data-target='#myModal')
 			span.glyphicon.glyphicon-plus   创建容器
-		table.table.table-striped.table-hover(style="margin-top:10px;")
-			thead
-				tr(style='background-color:#C0C0C0;')
-					th
-					th 序号
-					th 名称
-					th 镜像
-					th 地址
-					th 创建日期
-					th 状态
-					th 操作
-			tbody
-				each val in list
-					tr
-						th
-						td
-							span.class1 #{val.sn}
-						td
-							span.class1 #{val.name}
-						td
-							span.class1 #{val.image}
-						td
-							span.class1 #{val.Addr}
-						td
-							span.class1 #{val.created}
-						td
-							span.class1.label.label-success #{val.status.description}
-						td
-							.btn-group
-								button.btn.btn-primary 控制台
-								button.btn.btn-primary.dropdown-toggle(data-toggle='dropdown')
-									span.caret
-								ul.dropdown-menu(role='menu')
-									li(role='presentition')
-										a(role='menuitem', href='#') 
-											span.glyphicon.glyphicon-play 启动容器
-									li(role='presentition')
-										a(role='menuitem', href='#') 
-											span.glyphicon.glyphicon-pause 暂停容器
-									li(role='presentition')
-										a(role='menuitem', href='javascript:stopContainer()') 
-											span.glyphicon.glyphicon-stop 停止容器
-									li.divider(role='presentation')
-									li.dropdown-header(role='presentation') 危险操作区
-									li(role='presentition')
-										a(role='menuitem', href='#') 
-											span.glyphicon.glyphicon-remove 删除容器
-		ul.pagination(style='margin:auto;')
-			li
-				a(href='#') &laquo
-			li.active
-				a(href='#') 1
-			li
-				a(href='#') 2
-			li
-				a(href='#') 3
-			li
-				a(href='#') &raquo
+		button.btn.btn-primary(style='margin-left:10px;')#id_btn_refresh
+			span.glyphicon.glyphicon-refresh
+		div(style="margin-top:10px; border-style:solid; border-width:1px; border-color:#C0C0C0;")#id_container_table
+			table.table.table-striped.table-hover(style='margin-bottom:0px;')
+				thead
+					tr(style='background-color:#C0C0C0;')
+						th(style='padding-left:50px;') 序号
+						th 名称
+						th 镜像
+						th 地址
+						th 创建日期
+						th 状态
+						th 操作
+				tbody#id_table_body
+		ul.pagination#id_ul_page
 		.modal.fade(id='myModal', aria-hidden='true', aria-labelledby="myModalLabel", data-backdrop='true', tabindex="-1", role="dialog")
 			.modal-dialog
 				.modal-content
