@@ -1,0 +1,69 @@
+extends layout
+
+block content
+	div(style='margin-top:20px;')
+		button.btn.btn-success(data-toggle='modal', data-target='#myModal')
+			span.glyphicon.glyphicon-plus   创建容器
+		table.table.table-striped.table-hover(style="margin-top:10px;")
+			thead
+				tr(style='background-color:#C0C0C0;')
+					th
+					th 序号
+					th 名称
+					th 镜像
+					th 地址
+					th 状态
+					th 操作
+			tbody
+				each val in list
+					tr
+						th
+						td #{val.sn}
+						td #{val.name}
+						td #{val.image}
+						td #{val.Addr}
+						td 
+							span.label.label-success #{val.status.description}
+						td(style='width:120px;')
+							.btn-group
+								button.btn.btn-primary 控制台
+								button.btn.btn-primary.dropdown-toggle(data-toggle='dropdown')
+									span.caret
+								ul.dropdown-menu(role='menu')
+									li(role='presentition')
+										a(role='menuitem', href='#') 
+											span.glyphicon.glyphicon-play 启动容器
+									li(role='presentition')
+										a(role='menuitem', href='#') 
+											span.glyphicon.glyphicon-pause 暂停容器
+									li(role='presentition')
+										a(role='menuitem', href='javascript:stopContainer()') 
+											span.glyphicon.glyphicon-stop 停止容器
+									li.divider(role='presentation')
+									li.dropdown-header(role='presentation') 危险操作区
+									li(role='presentition')
+										a(role='menuitem', href='#') 
+											span.glyphicon.glyphicon-remove 删除容器
+		ul.pagination(style='margin:auto;')
+			li
+				a(href='#') &laquo
+			li.active
+				a(href='#') 1
+			li
+				a(href='#') 2
+			li
+				a(href='#') 3
+			li
+				a(href='#') &raquo
+		.modal.fade(id='myModal', aria-hidden='true', aria-labelledby="myModalLabel", data-backdrop='true', tabindex="-1", role="dialog")
+			.modal-dialog
+				.modal-content
+					.modal-header
+						button.close(data-dismiss="modal",aria-hidden="true")
+							&times;
+						h4.modal-title(id="myModalLabel") 创建新容器
+					.modal-body
+						一些文本内容
+					.modal-footer
+						button.btn.btn-default(data-dismiss='modal') 关闭
+						button.btn.btn-primary 提交更改
