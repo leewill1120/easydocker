@@ -4,9 +4,13 @@ var handlers = require('../handlers')
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+  res.render('index', { title: 'easyDocker' });
 });
 
 router.get('/container', handlers.container);
+
+router.get('/summary', handlers.summary);
+
+router.get('/image', handlers.image);
 
 module.exports = router;
