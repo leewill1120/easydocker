@@ -25,7 +25,7 @@ function addItemToTable(tableId, item){
 	td = $('<td></td>').appendTo(tr);
 	span = $('<span class="class1"></span>').appendTo(td);
 	if(item.name.trim() == '<none>'){
-		span.append('none');
+		span.append('---');
 	}else{
 		span.append(item.name);
 	}
@@ -33,7 +33,7 @@ function addItemToTable(tableId, item){
 	td = $('<td></td>').appendTo(tr);
 	span = $('<span class="class1"></span>').appendTo(td);
 	if(item.tag.trim() == '<none>'){
-		span.append('none');
+		span.append('---');
 	}else{
 		span.append(item.tag);
 	}

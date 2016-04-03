@@ -12,20 +12,34 @@ function openConsole(name){
 	//alert(name);
 }
 
+function createContainer(name, option){
+	$.post('/createContainer', {name:name, option:option}, function(data, status){});
+	window.location.reload();
+}
+
 function startContainer(name){
-	alert('startContainer');
+	$.post('/doContainer', {action:'start', name:name}, function(data, status){});
+	window.location.reload();
 }
 
 function pauseContainer(name){
-	alert('pauseContainer');
+	$.post('/doContainer', {action:'pause', name:name}, function(data, status){});
+	window.location.reload();
+}
+
+function unpauseContainer(name){
+	$.post('/doContainer', {action:'unpause', name:name}, function(data, status){});
+	window.location.reload();
 }
 
 function stopContainer(name){
-	alert('stopContainer');
+	$.post('/doContainer', {action:'stop', name:name}, function(data, status){});
+	window.location.reload();
 }
 
 function removeContainer(name){
-	alert('removeContainer');
+	$.post('/doContainer', {action:'remove', name:name}, function(data, status){});
+	window.location.reload();
 }
 
 function addItemToTable(tableId, item){
@@ -73,13 +87,18 @@ function addItemToTable(tableId, item){
 	var a = $('<a role="menuitem" href="javascript:startContainer(\'' + item.name + '\');"></a>').appendTo(li);
 	span = $('<span class="glyphicon glyphicon-play">启动容器</span>').appendTo(a);
 
-	li = $('<li role="presentition"></li>').appendTo(ul);
-	a = $('<a role="menuitem" href="javascript:pauseContainer(\'' + item.name + '\');"></a>').appendTo(li);
-	span = $('<span class="glyphicon glyphicon-pause">暂停容器</span>').appendTo(a);
 
 	li = $('<li role="presentition"></li>').appendTo(ul);
 	a = $('<a role="menuitem" href="javascript:stopContainer(\'' + item.name + '\');"></a>').appendTo(li);
 	span = $('<span class="glyphicon glyphicon-stop">停止容器</span>').appendTo(a);
+
+	li = $('<li role="presentition"></li>').appendTo(ul);
+	a = $('<a role="menuitem" href="javascript:pauseContainer(\'' + item.name + '\');"></a>').appendTo(li);
+	span = $('<span class="glyphicon glyphicon-pause">暂停运行</span>').appendTo(a);
+
+	li = $('<li role="presentition"></li>').appendTo(ul);
+	a = $('<a role="menuitem" href="javascript:unpauseContainer(\'' + item.name + '\');"></a>').appendTo(li);
+	span = $('<span class="glyphicon glyphicon-forward">继续运行</span>').appendTo(a);
 
 	$('<li class="divider" role="presentition"></li>').appendTo(ul);
 	$('<li class="dropdown-header" role="presentition">危险操作区</li>').appendTo(ul);
@@ -178,6 +197,31 @@ $(document).ready(function(){
 
 	$('#id_search_input').keyup(function(){
 		searchContainer($('#id_search_input').val());
+	});
+
+	$('#id_btn_submit').click(function(){
+		var name = $('#form_name').val();
+		var opt = {
+			Image: $('#form_image').val(),
+			ipAddress: $('#form_ipAddress').val()
+		};
+		createContainer(name, opt);
+	});
+
+	$('#id_btn_create').click(function(){
+		$.get('/imageList', function(data, status){
+			if('success' == status){
+				imageList = data.list;
+				for (var i = 0; i < imageList.length; i++) {
+					if(imageList[i].name == '<none>' || imageList[i].tag == '<none>'){
+						continue;
+					}
+					$('<option>' + imageList[i].name + ':' + imageList[i].tag + '</option>').appendTo('#form_image');
+				}
+			}else{
+				alert(status);
+			}
+		});
 	});
 
 	currentPage = 1;

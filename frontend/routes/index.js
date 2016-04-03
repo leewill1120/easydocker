@@ -17,4 +17,10 @@ router.get('/containerlist', handlers.containerlist);
 
 router.get('/imageList', handlers.imageList);
 
+router.post('/doContainer', handlers.doContainer);
+
+router.post('/createContainer', handlers.createContainer);
+
+router.delete('/doContainer', handlers.doContainer);
+
 module.exports = router;
