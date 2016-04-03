@@ -15,4 +15,6 @@ router.get('/image', handlers.image);
 
 router.get('/containerlist', handlers.containerlist);
 
+router.get('/imageList', handlers.imageList);
+
 module.exports = router;

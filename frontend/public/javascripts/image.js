@@ -1,6 +1,6 @@
 var totalPage = 0;
 var currentPage = 0;
-var containerList = [];
+var imageList = [];
 var searchList = [];
 var serachMode = false;
 
@@ -8,24 +8,9 @@ function test(){
 	alert('This is a test');
 }
 
-function openConsole(name){
-	//alert(name);
-}
 
-function startContainer(name){
-	alert('startContainer');
-}
-
-function pauseContainer(name){
-	alert('pauseContainer');
-}
-
-function stopContainer(name){
-	alert('stopContainer');
-}
-
-function removeContainer(name){
-	alert('removeContainer');
+function removeImage(name){
+	alert('removeImage');
 }
 
 function addItemToTable(tableId, item){
@@ -39,64 +24,52 @@ function addItemToTable(tableId, item){
 
 	td = $('<td></td>').appendTo(tr);
 	span = $('<span class="class1"></span>').appendTo(td);
-	span.append(item.name);
+	if(item.name.trim() == '<none>'){
+		span.append('none');
+	}else{
+		span.append(item.name);
+	}
 
 	td = $('<td></td>').appendTo(tr);
 	span = $('<span class="class1"></span>').appendTo(td);
-	span.append(item.image);
+	if(item.tag.trim() == '<none>'){
+		span.append('none');
+	}else{
+		span.append(item.tag);
+	}
 
 	td = $('<td></td>').appendTo(tr);
 	span = $('<span class="class1"></span>').appendTo(td);
-	span.append(item.ipAddress);
+	span.append(item.id);
+
+	td = $('<td></td>').appendTo(tr);
+	span = $('<span class="class1"></span>').appendTo(td);
+	span.append(item.size);
 
 	td = $('<td></td>').appendTo(tr);
 	span = $('<span class="class1"></span>').appendTo(td);
 	span.append(item.created);
 
 	td = $('<td></td>').appendTo(tr);
-	span = $('<span class="class1 label"></span>').appendTo(td);
-	if(item.status.stat == 'success'){
-		span.addClass('label-success');
-	}else{
-		span.addClass('label-danger');
-	}
-	span.append(item.status.description);
-
-	td = $('<td></td>').appendTo(tr);
 	var btn_group = $('<div class="btn-group"></div>').appendTo(td);
-	$('<button class="btn btn-primary" onclick="javascript:openConsole(\'' + item.name + '\');">控制台</button>').appendTo(btn_group);
+	$('<button class="btn btn-primary" onclick="javascript:openConsole(\'' + item.name + '\');">更多</button>').appendTo(btn_group);
 	var btn = $('<button class="btn btn-primary dropdown-toggle" data-toggle="dropdown"></button>').appendTo(btn_group);
 	$('<span class="caret"></span>').appendTo(btn);
 	var ul = $('<ul class="dropdown-menu" role="menu"></ul>').appendTo(btn_group);
 
-	var li = $('<li role="presentition"></li>').appendTo(ul);
-	var a = $('<a role="menuitem" href="javascript:startContainer(\'' + item.name + '\');"></a>').appendTo(li);
-	span = $('<span class="glyphicon glyphicon-play">启动容器</span>').appendTo(a);
-
 	li = $('<li role="presentition"></li>').appendTo(ul);
-	a = $('<a role="menuitem" href="javascript:pauseContainer(\'' + item.name + '\');"></a>').appendTo(li);
-	span = $('<span class="glyphicon glyphicon-pause">暂停容器</span>').appendTo(a);
-
-	li = $('<li role="presentition"></li>').appendTo(ul);
-	a = $('<a role="menuitem" href="javascript:stopContainer(\'' + item.name + '\');"></a>').appendTo(li);
-	span = $('<span class="glyphicon glyphicon-stop">停止容器</span>').appendTo(a);
-
-	$('<li class="divider" role="presentition"></li>').appendTo(ul);
-	$('<li class="dropdown-header" role="presentition">危险操作区</li>').appendTo(ul);
-
-	li = $('<li role="presentition"></li>').appendTo(ul);
-	a = $('<a role="menuitem" href="javascript:removeContainer(\'' + item.name + '\');"></a>').appendTo(li);
-	span = $('<span class="glyphicon glyphicon-remove">删除容器</span>').appendTo(a);
+	a = $('<a role="menuitem" href="javascript:removeImage(\'' + item.id + '\');"></a>').appendTo(li);
+	span = $('<span class="glyphicon glyphicon-remove">删除镜像</span>').appendTo(a);
 }
 
-function getContainerList(callback){
-	$.get('/containerlist', function(data, status){
+function getImageList(callback){
+	$.get('/imageList', function(data, status){
 		if('success' == status){
-			containerList = data.list;
+			imageList = data.list;
 			var cap = getTableCap();
 			totalPage = Math.ceil(data.list.length / cap);
 			for (var i = 0; i < cap && i < data.list.length; i++) {
-				addItemToTable('id_table_body', containerList[i]);
+				addItemToTable('id_table_body', imageList[i]);
 			}
 			if(callback != undefined){
 				callback();
@@ -116,8 +89,8 @@ function goToPage(page){
 			targetList = searchList;
 			totalPage = Math.ceil(searchList.length / getTableCap());
 		}else{
-			targetList = containerList;
-			totalPage = Math.ceil(containerList.length / getTableCap());
+			targetList = imageList;
+			totalPage = Math.ceil(imageList.length / getTableCap());
 		}
 		
 		emptyTable('id_table_body');
@@ -141,11 +114,11 @@ function goToPage(page){
 				$($(children[i]).children()[0]).attr('href', 'javascript:goToPage(' + (totalPage - 10 + i) + ');');
 			}
 		}
-		updatePageInfoPos("id_ul_page");
+		updatePageInfoPos();
 	}
 }
 
-function searchContainer(keyword){
+function searchImage(keyword){
 	searchList = [];
 	if(keyword == ''){
 		serachMode = false;
@@ -153,9 +126,9 @@ function searchContainer(keyword){
 		serachMode = true;
 	}
 	
-	for (var i = 0; i < containerList.length; i++) {
-		if( -1 != containerList[i].name.toLowerCase().indexOf(keyword.toLowerCase()) || -1 != containerList[i].ipAddress.toLowerCase().indexOf(keyword.toLowerCase()))
-		searchList.push(containerList[i]);
+	for (var i = 0; i < imageList.length; i++) {
+		if( -1 != imageList[i].name.toLowerCase().indexOf(keyword.toLowerCase()) || -1 != imageList[i].tag.toLowerCase().indexOf(keyword.toLowerCase()) || -1 != imageList[i].id.toLowerCase().indexOf(keyword.toLowerCase()))
+		searchList.push(imageList[i]);
 	}
 
 	currentPage = 1;
@@ -177,11 +150,11 @@ $(document).ready(function(){
 	});
 
 	$('#id_search_input').keyup(function(){
-		searchContainer($('#id_search_input').val());
+		searchImage($('#id_search_input').val());
 	});
 
 	currentPage = 1;
-	getContainerList(function(){
+	getImageList(function(){
 		if(0 < totalPage){
 			printPageInfo(currentPage, totalPage, "id_table_body", "id_ul_page");
 		}
