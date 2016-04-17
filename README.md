@@ -1,3 +1,3 @@
 # EasyDocker
 An easy way to docker!
-![image](https://github.com/leewill1120/easydocker/frontend/raw/master/easydocker.PNG)
+![image](https://raw.githubusercontent.com/leewill1120/easydocker/master/frontend/easydocker.PNG)
