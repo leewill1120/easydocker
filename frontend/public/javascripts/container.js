@@ -12,9 +12,9 @@ function openConsole(name){
 	//alert(name);
 }
 
-function createContainer(name, option){
-	$.post('/createContainer', {name:name, option:option}, function(data, status){});
-	window.location.reload();
+function createContainer(option){
+	$.post('/createContainer', option, function(data, status){});
+	//window.location.reload();
 }
 
 function startContainer(name){
@@ -69,11 +69,7 @@ function addItemToTable(tableId, item){
 
 	td = $('<td></td>').appendTo(tr);
 	span = $('<span class="class1 label"></span>').appendTo(td);
-	if(item.status.stat == 'success'){
-		span.addClass('label-success');
-	}else{
-		span.addClass('label-danger');
-	}
+	span.addClass('label-' + item.status.stat);
 	span.append(item.status.description);
 
 	td = $('<td></td>').appendTo(tr);
@@ -200,12 +196,12 @@ $(document).ready(function(){
 	});
 
 	$('#id_btn_submit').click(function(){
-		var name = $('#form_name').val();
 		var opt = {
+			name: $('#form_name').val(),
 			Image: $('#form_image').val(),
-			ipAddress: $('#form_ipAddress').val()
+			IPAddress: $('#form_ipAddress').val()
 		};
-		createContainer(name, opt);
+		createContainer(opt);
 	});
 
 	$('#id_btn_create').click(function(){

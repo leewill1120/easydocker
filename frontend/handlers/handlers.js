@@ -2,6 +2,12 @@ var http = require('http');
 var math = require('math');
 var querystring = require('querystring');
 
+var dockerHost = '192.168.1.103'
+var dockerPort = 4243
+var dockerProto = 'http'
+var dockerURL = dockerProto + '://' + dockerHost + ':' + dockerPort
+var dockerApiVersion = 'v1.20'
+
 exports.container = function(req, res){
 	var title = 'Container List';
 	res.render('container');
@@ -16,22 +22,32 @@ exports.image = function(req, res){
 }
 
 exports.containerlist = function(req, res){
-	var list = [];
-	http.get('http://10.0.0.109:4243/containers/json?all=1', function(res_docker){
+	http.get(dockerURL + '/containers/json?all=1', function(res_docker){
+		var data = '';
 		res_docker.setEncoding('utf8');
 		res_docker.on('data', function(chunk){
-			var objs = JSON.parse(chunk);
+			data += chunk;
+		});
+		res_docker.on('end', function(){
+			var list = [];
+			var objs = JSON.parse(data);
 			for (var i = 0; i < objs.length; i++) {
 				var status = '';
 				if('Up' == objs[i].Status.substr(0,2)){
 					status = 'success';
-				}else if('' == objs[i].Status){
-					status = 'danger';
-					objs[i].Status = 'Stopped'
+				}else if(objs[i].Status.indexOf('Removal In Progress') != -1){
+					status = 'default';
+				}else if(objs[i].Status.indexOf('Created') != -1){
+					status = 'info';
 				}else{
 					status = 'danger';
 				}
-				list.push({'sn': i + 1, 'name': objs[i].Names[0].substr(1), 'image':objs[i].Image, 'ipAddress': '207.207.90.' + i, 'created':new Date(parseInt(objs[i].Created) * 1000).toLocaleString(), 'status':{'stat': status, 'description':objs[i].Status }});
+
+				var name = '---'
+				if(objs[i].Names != undefined){
+					name = objs[i].Names[0].substr(1)
+				}
+				list.push({'sn': i + 1, 'name': name, 'image':objs[i].Image, 'ipAddress': objs[i].IPAddress, 'created':new Date(parseInt(objs[i].Created) * 1000).toLocaleString(), 'status':{'stat': status, 'description':objs[i].Status }});
 			}
 			res.send({'list':list});
 		});
@@ -41,11 +57,15 @@ exports.containerlist = function(req, res){
 }
 
 exports.imageList = function(req, res){
-	var list = [];
-	http.get('http://10.0.0.109:4243/images/json', function(res_docker){
+	http.get(dockerURL + '/images/json', function(res_docker){
+		var data = '';
 		res_docker.setEncoding('utf8');
 		res_docker.on('data', function(chunk){
-			var objs = JSON.parse(chunk);
+			data += chunk;
+		});
+		res_docker.on('end', function(){
+			var list = [];
+			var objs = JSON.parse(data);
 			for (var i = 0; i < objs.length; i++) {
 				list.push({'sn': i + 1, 'name': objs[i].RepoTags[0].split(':')[0], 'tag':objs[i].RepoTags[0].split(':')[1], 'id':objs[i].Id, 'created': new Date(parseInt(objs[i].Created) * 1000).toLocaleString() ,'size':math.round(objs[i].VirtualSize / 1024 / 1024)});
 			}
@@ -71,15 +91,15 @@ exports.doContainer = function(req, res){
 }
 
 exports.createContainer = function(req, res){
-	postCreateContainer(req.body.name, req.body.option);
+	postCreateContainer(req.body);
 }
 
 function postDoContainer(action, name){
 	var postData = querystring.stringify({});
 	var options = {
-		hostname: '127.0.0.1',
-		port: 4243,
-		path: '/v1.14/containers/' + name + '/' + action,
+		hostname: dockerHost,
+		port: dockerPort,
+		path: '/' + dockerApiVersion + '/containers/' + name + '/' + action,
 		method: 'POST',
 		headers:{
 		    'Content-Type': 'application/x-www-form-urlencoded',
@@ -110,9 +130,9 @@ function postDoContainer(action, name){
 function postDelContainer(name){
 	var postData = querystring.stringify({});
 	var options = {
-		hostname: '127.0.0.1',
-		port: 4243,
-		path: '/v1.14/containers/' + name + '?force=1',
+		hostname: dockerHost,
+		port: dockerPort,
+		path: '/' + dockerApiVersion + '/containers/' + name + '?force=1',
 		method: 'DELETE',
 		headers:{
 		    'Content-Type': 'application/x-www-form-urlencoded',
@@ -140,7 +160,7 @@ function postDelContainer(name){
 	req.end();
 }
 
-function postCreateContainer(name, opt){
+function postCreateContainer(opt){
 	var opt_template = {
 		"Hostname": "",
 		"Domainname": "",
@@ -161,12 +181,13 @@ function postCreateContainer(name, opt){
 		"Cmd": [
 		    "bash"
 		],
-		"Image": "docker.io/ubuntu",
+		"Image": "",
 		"Volumes": {},
 		"WorkingDir": "",
 		"Entrypoint": null,
 		"NetworkDisabled": false,
-		"OnBuild": null
+		"OnBuild": null,
+		"IPAddress": ""
 	}
 
 	for(x in opt)
@@ -180,9 +201,9 @@ function postCreateContainer(name, opt){
 	console.log(postData);
 
 	var options = {
-		hostname: '127.0.0.1',
-		port: 4243,
-		path: '/v1.14/containers/create?name=' + name,
+		hostname: dockerHost,
+		port: dockerPort,
+		path: '/' + dockerApiVersion + '/containers/create?name=' + opt.name,
 		method: 'POST',
 		headers:{
 		    'Content-Type': 'application/json',
