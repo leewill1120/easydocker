@@ -13,33 +13,39 @@ function openConsole(name){
 }
 
 function createContainer(option){
-	$.post('/createContainer', option, function(data, status){});
-	//window.location.reload();
+	$.post('/createContainer', option, function(data, status){
+		window.setTimeout(reloadContainerList, 1000);
+	});
 }
 
 function startContainer(name){
-	$.post('/doContainer', {action:'start', name:name}, function(data, status){});
-	window.location.reload();
+	$.post('/doContainer', {action:'start', name:name}, function(data, status){
+		window.setTimeout(reloadContainerList, 1000);
+	});
 }
 
 function pauseContainer(name){
-	$.post('/doContainer', {action:'pause', name:name}, function(data, status){});
-	window.location.reload();
+	$.post('/doContainer', {action:'pause', name:name}, function(data, status){
+		window.setTimeout(reloadContainerList, 1000);
+	});
 }
 
 function unpauseContainer(name){
-	$.post('/doContainer', {action:'unpause', name:name}, function(data, status){});
-	window.location.reload();
+	$.post('/doContainer', {action:'unpause', name:name}, function(data, status){
+		window.setTimeout(reloadContainerList, 1000);
+	});
 }
 
 function stopContainer(name){
-	$.post('/doContainer', {action:'stop', name:name}, function(data, status){});
-	window.location.reload();
+	$.post('/doContainer', {action:'stop', name:name}, function(data, status){
+		window.setTimeout(reloadContainerList, 1000);
+	});
 }
 
 function removeContainer(name){
-	$.post('/doContainer', {action:'remove', name:name}, function(data, status){});
-	window.location.reload();
+	$.post('/doContainer', {action:'remove', name:name}, function(data, status){
+		window.setTimeout(reloadContainerList, 1000);
+	});
 }
 
 function addItemToTable(tableId, item){
@@ -122,42 +128,49 @@ function getContainerList(callback){
 	});
 }
 
+function cleanUpTable(){
+	$('#id_ul_page').empty();
+	$('#id_table_body').empty();
+}
+
+function reloadContainerList(){
+	cleanUpTable();
+	getContainerList(function(){
+		if(0 < totalPage){
+			printPageInfo(currentPage, totalPage, "id_table_body", "id_ul_page");
+		}
+		goToPage(currentPage);
+	});
+}
+
 function goToPage(page){
-	if(currentPage == page){
-		return;
+	var targetList = [];
+	if(serachMode == true){
+		targetList = searchList;
+		totalPage = Math.ceil(searchList.length / getTableCap());
 	}else{
-		var targetList = [];
-		if(serachMode == true){
-			targetList = searchList;
-			totalPage = Math.ceil(searchList.length / getTableCap());
-		}else{
-			targetList = containerList;
-			totalPage = Math.ceil(containerList.length / getTableCap());
-		}
-		
-		emptyTable('id_table_body');
-		currentPage = page;
-		var cap = getTableCap();
-		for (var i = 0; i < cap; i++) {
-			if((i + (currentPage - 1) * cap) < targetList.length)
-			{
-				addItemToTable('id_table_body', targetList[i + (currentPage - 1) * cap]);
-			}
-		}
-		var children = $('#id_ul_page').children();
-		for (var i = 1; i < children.length - 1; i++) {
-			if( page == parseInt($($(children[i]).children()[0]).text())){
-				$(children[i]).addClass('active');
-			}else{
-				$(children[i]).removeClass('active');
-			}
-			if(page == totalPage){
-				$($(children[i]).children()[0]).text( totalPage - 10 + i);
-				$($(children[i]).children()[0]).attr('href', 'javascript:goToPage(' + (totalPage - 10 + i) + ');');
-			}
-		}
-		updatePageInfoPos("id_ul_page");
+		targetList = containerList;
+		totalPage = Math.ceil(containerList.length / getTableCap());
 	}
+	
+	emptyTable('id_table_body');
+	currentPage = page;
+	var cap = getTableCap();
+	for (var i = 0; i < cap; i++) {
+		if((i + (currentPage - 1) * cap) < targetList.length)
+		{
+			addItemToTable('id_table_body', targetList[i + (currentPage - 1) * cap]);
+		}
+	}
+	var children = $('#id_ul_page').children();
+	for (var i = 1; i < children.length - 1; i++) {
+		if( page == parseInt($($(children[i]).children()[0]).text())){
+			$(children[i]).addClass('active');
+		}else{
+			$(children[i]).removeClass('active');
+		}
+	}
+	updatePageInfoPos("id_ul_page");
 }
 
 function searchContainer(keyword){
@@ -188,7 +201,7 @@ function searchContainer(keyword){
 
 $(document).ready(function(){
 	$('#id_btn_refresh').click(function(){
-		window.location.reload();
+		reloadContainerList();
 	});
 
 	$('#id_search_input').keyup(function(){

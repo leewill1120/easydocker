@@ -92,6 +92,7 @@ exports.doContainer = function(req, res){
 
 exports.createContainer = function(req, res){
 	postCreateContainer(req.body);
+	res.send('processing');
 }
 
 function postDoContainer(action, name){
