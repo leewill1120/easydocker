@@ -61,7 +61,7 @@ exports.containerlist = function(req, res){
 				if(objs[i].Names != undefined){
 					name = objs[i].Names[0].substr(1)
 				}
-				list.push({'sn': i + 1, 'name': name, 'image':objs[i].Image.split(":")[1].substr(0, 12), 'ipAddress': objs[i].IPAddress, 'created':new Date(parseInt(objs[i].Created) * 1000).toLocaleString(), 'status':{'stat': status, 'description':objs[i].Status }});
+				list.push({'sn': i + 1, 'name': name, 'image':objs[i].Image, 'ipAddress': objs[i].IPAddress, 'created':new Date(parseInt(objs[i].Created) * 1000).toLocaleString(), 'status':{'stat': status, 'description':objs[i].Status }});
 			}
 			res.send({'list':list});
 		});
