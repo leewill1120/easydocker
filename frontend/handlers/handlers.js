@@ -2,11 +2,16 @@ var http = require('http');
 var math = require('math');
 var querystring = require('querystring');
 
-var dockerHost = '192.168.1.103'
+//tcp
+var dockerHost = '127.0.0.1'
 var dockerPort = 4243
 var dockerProto = 'http'
 var dockerURL = dockerProto + '://' + dockerHost + ':' + dockerPort
-var dockerApiVersion = 'v1.20'
+
+//unix domain socket
+var socketFile='/var/run/docker.sock';
+
+var dockerApiVersion = 'v1.23'
 
 exports.container = function(req, res){
 	var title = 'Container List';
@@ -22,15 +27,24 @@ exports.image = function(req, res){
 }
 
 exports.containerlist = function(req, res){
-	http.get(dockerURL + '/containers/json?all=1', function(res_docker){
-		var data = '';
+	var options = {
+		//hostname: dockerHost,
+		//port: dockerPort,
+		socketPath:socketFile,
+		path: '/containers/json?all=1',
+		method: 'GET'
+	};
+
+	var req_docker = http.request(options, function(res_docker){
+		var buf = '';
 		res_docker.setEncoding('utf8');
 		res_docker.on('data', function(chunk){
-			data += chunk;
+			buf += chunk;
 		});
+
 		res_docker.on('end', function(){
 			var list = [];
-			var objs = JSON.parse(data);
+			var objs = JSON.parse(buf);
 			for (var i = 0; i < objs.length; i++) {
 				var status = '';
 				if('Up' == objs[i].Status.substr(0,2)){
@@ -47,33 +61,44 @@ exports.containerlist = function(req, res){
 				if(objs[i].Names != undefined){
 					name = objs[i].Names[0].substr(1)
 				}
-				list.push({'sn': i + 1, 'name': name, 'image':objs[i].Image, 'ipAddress': objs[i].IPAddress, 'created':new Date(parseInt(objs[i].Created) * 1000).toLocaleString(), 'status':{'stat': status, 'description':objs[i].Status }});
+				list.push({'sn': i + 1, 'name': name, 'image':objs[i].Image.split(":")[1].substr(0, 12), 'ipAddress': objs[i].IPAddress, 'created':new Date(parseInt(objs[i].Created) * 1000).toLocaleString(), 'status':{'stat': status, 'description':objs[i].Status }});
 			}
 			res.send({'list':list});
 		});
 	}).on('error', function(e){
 		console.log(e.message);
 	});
+	req_docker.end();
 }
 
 exports.imageList = function(req, res){
-	http.get(dockerURL + '/images/json', function(res_docker){
-		var data = '';
+	var options = {
+		//hostname: dockerHost,
+		//port: dockerPort,
+		socketPath:socketFile,
+		path: '/images/json',
+		method: 'GET'
+	};
+
+	var req_docker = http.request(options, function(res_docker){
+		var buf = '';
 		res_docker.setEncoding('utf8');
 		res_docker.on('data', function(chunk){
-			data += chunk;
+			buf += chunk;
 		});
+
 		res_docker.on('end', function(){
 			var list = [];
-			var objs = JSON.parse(data);
+			var objs = JSON.parse(buf);
 			for (var i = 0; i < objs.length; i++) {
-				list.push({'sn': i + 1, 'name': objs[i].RepoTags[0].split(':')[0], 'tag':objs[i].RepoTags[0].split(':')[1], 'id':objs[i].Id, 'created': new Date(parseInt(objs[i].Created) * 1000).toLocaleString() ,'size':math.round(objs[i].VirtualSize / 1024 / 1024)});
+				list.push({'sn': i + 1, 'name': objs[i].RepoTags[0].split(':')[0], 'tag':objs[i].RepoTags[0].split(':')[1], 'id':objs[i].Id.split(":")[1].substr(0, 12), 'created': new Date(parseInt(objs[i].Created) * 1000).toLocaleString() ,'size':math.round(objs[i].VirtualSize / 1024 / 1024)});
 			}
 			res.send({'list':list});
 		});
 	}).on('error', function(e){
 		console.log(e.message);
 	});
+	req_docker.end();
 }
 
 exports.doContainer = function(req, res){
@@ -98,8 +123,9 @@ exports.createContainer = function(req, res){
 function postDoContainer(action, name){
 	var postData = querystring.stringify({});
 	var options = {
-		hostname: dockerHost,
-		port: dockerPort,
+		//hostname: dockerHost,
+		//port: dockerPort,
+		socketPath:socketFile,
 		path: '/' + dockerApiVersion + '/containers/' + name + '/' + action,
 		method: 'POST',
 		headers:{
@@ -131,8 +157,9 @@ function postDoContainer(action, name){
 function postDelContainer(name){
 	var postData = querystring.stringify({});
 	var options = {
-		hostname: dockerHost,
-		port: dockerPort,
+		//hostname: dockerHost,
+		//port: dockerPort,
+		socketPath:socketFile,
 		path: '/' + dockerApiVersion + '/containers/' + name + '?force=1',
 		method: 'DELETE',
 		headers:{
@@ -202,8 +229,9 @@ function postCreateContainer(opt){
 	console.log(postData);
 
 	var options = {
-		hostname: dockerHost,
-		port: dockerPort,
+		//hostname: dockerHost,
+		//port: dockerPort,
+		socketPath:socketFile,
 		path: '/' + dockerApiVersion + '/containers/create?name=' + opt.name,
 		method: 'POST',
 		headers:{

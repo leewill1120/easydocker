@@ -5,5 +5,6 @@ $(document).ready(function(){
 		$('#mytitle').text($(this).text());
 	});
 	$('#id_iframe_a').css({'height':$(window).height() - 90});
-	$('#id_iframe_a').width(document.body.clientWidth - 160 - 50 - 50 );
+	padding_width = parseInt($('#id_iframe_a').css("padding"));
+	$('#id_iframe_a').width(document.body.clientWidth - 160 - padding_width * 2 );
 });
