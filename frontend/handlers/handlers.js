@@ -61,7 +61,6 @@ exports.containerlist = function(req, res){
 				if(objs[i].Names != undefined){
 					name = objs[i].Names[0].substr(1)
 				}
-<<<<<<< HEAD
 				var image = '';
 				if(-1 == objs[i].Image.indexOf('sha256:')){
 					image = objs[i].Image
@@ -69,9 +68,6 @@ exports.containerlist = function(req, res){
 					image = objs[i].Image.split("sha256:")[1].substr(0, 12)
 				}
 				list.push({'sn': i + 1, 'name': name, 'image':image, 'ipAddress': objs[i].IPAddress, 'created':new Date(parseInt(objs[i].Created) * 1000).toLocaleString(), 'status':{'stat': status, 'description':objs[i].Status }});
-=======
-				list.push({'sn': i + 1, 'name': name, 'image':objs[i].Image, 'ipAddress': objs[i].IPAddress, 'created':new Date(parseInt(objs[i].Created) * 1000).toLocaleString(), 'status':{'stat': status, 'description':objs[i].Status }});
->>>>>>> 684fe5f829005293ce154d9d53645e8d98d85d88
 			}
 			res.send({'list':list});
 		});
