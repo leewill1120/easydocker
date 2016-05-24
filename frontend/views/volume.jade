@@ -1,42 +1,39 @@
 doctype html
 html
 	head
-		title= container
+		title= volume
 		link(rel='stylesheet', href='/bootstrap/3.3.5/css/bootstrap.min.css')
-		link(rel='stylesheet', href='/stylesheets/container.css')
+		link(rel='stylesheet', href='/stylesheets/image.css')
 		script(src='/javascripts/jquery-2.2.2.min.js')
 		script(src='/bootstrap/3.3.5/js/bootstrap.min.js')
 		script(src='/javascripts/common.js')
-		script(src='/javascripts/container.js')
+		script(src='/javascripts/volume.js')
 	body
 		button.btn.btn-success(data-toggle='modal', data-target='#myModal')#id_btn_create
-			span.glyphicon.glyphicon-plus   创建容器
+			span.glyphicon.glyphicon-plus   创建数据卷
 		button.btn.btn-primary(style='margin-left:10px;')#id_btn_refresh
 			span.glyphicon.glyphicon-refresh
-		input.form-control(type='text', placeholder='搜索:输入名称或者IP地址', style='margin-left:10px; width:200px; display:inline;')#id_search_input
+		input.form-control(type='text', placeholder='搜索:输入名称', style='margin-left:10px; width:200px; display:inline;')#id_search_input
 
-		div(style="margin-top:10px; border-style:solid; border-width:1px; border-color:#C0C0C0;")#id_container_table
+		div(style="margin-top:10px; border-style:solid; border-width:1px; border-color:#C0C0C0;")#id_volume_table
 			table.table.table-striped.table-hover(style='margin-bottom:0px;')
 				thead
 					tr(style='background-color:#C0C0C0;')
 						th(style='padding-left:50px;') 序号
 						th 名称
-						th 镜像
-						th 地址
-						th 创建日期
-						th 状态
+						th 驱动类型
 						th 操作
 				tbody#id_table_body
 		ul.pagination#id_ul_page
-		.modal.fade(aria-hidden='true', aria-labelledby="myModalLabel", data-backdrop='true', tabindex="-1", role="dialog")#myModal
+		.modal.fade(id='myModal', aria-hidden='true', aria-labelledby="myModalLabel", data-backdrop='true', tabindex="-1", role="dialog")
 			.modal-dialog
 				.modal-content
 					.modal-header
 						button.close(data-dismiss="modal",aria-hidden="true")
 							&times;
-						h4.modal-title(id="myModalLabel") 创建新容器
+						h4.modal-title(id="myModalLabel") 创建数据卷
 					.modal-body
-						form.form-horizontal#form_create_container
+						form.form-horizontal#form_create_volume
 					.modal-footer
 						button.btn.btn-default(data-dismiss='modal') 取消
 						button.btn.btn-primary(data-dismiss='modal')#id_btn_submit 确定

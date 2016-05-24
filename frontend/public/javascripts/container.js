@@ -13,7 +13,7 @@ function openConsole(name){
 }
 
 function createContainer(option){
-	$.post('/createContainer', option, function(data, status){
+	$.post('/createContainer', {data:JSON.stringify(option)}, function(data, status){ // !!!important
 		window.setTimeout(reloadContainerList, 1000);
 	});
 }
@@ -212,12 +212,28 @@ $(document).ready(function(){
 		var opt = {
 			name: $('#form_name').val(),
 			Image: $('#form_image').val(),
-			IPAddress: $('#form_ipAddress').val()
+			HostConfig: {Binds: [$('#form_volume').val() + ':/root/ok']}
 		};
 		createContainer(opt);
 	});
 
 	$('#id_btn_create').click(function(){
+		$('#form_create_container').empty();
+
+		$('<label class="col-sm-2 control-label" for="form_name">名称</label>').appendTo($('<div class="form-group" id="form_name_grp"></div>').appendTo('#form_create_container'));
+		$('<input class="form-control" type="text" placeholder="请输入名字" id="form_name">').appendTo($('<div class="col-sm-8"></div>').appendTo('#form_name_grp'));
+
+		$('<label class="col-sm-2 control-label" for="form_image">镜像</label>').appendTo($('<div class="form-group" id="form_image_grp"></div>').appendTo('#form_create_container'));
+		$('<select class="form-control" id="form_image"></select>').appendTo($('<div class="col-sm-8"></div>').appendTo('#form_image_grp'));
+
+		$('<label class="col-sm-2 control-label" for="form_cmd">命令</label>').appendTo($('<div class="form-group" id="form_cmd_grp"></div>').appendTo('#form_create_container'));
+		$('<input class="form-control" type="text" placeholder="如：/bin/bash" id="form_cmd">').appendTo($('<div class="col-sm-8"></div>').appendTo('#form_cmd_grp'));
+
+		$('<label class="col-sm-2 control-label" for="form_volume">数据卷</label>').appendTo($('<div class="form-group" id="form_volume_grp"></div>').appendTo('#form_create_container'));
+		$('<select class="form-control" id="form_volume"></select>').appendTo($('<div class="col-sm-8" id="div_vol"></div>').appendTo('#form_volume_grp'));
+		$('<input class="form-control" type="text" placeholder="容器内挂载点，如：/var/lib/mysql" id="form_cmd">').appendTo('#div_vol');
+		$('<option>无</option>').appendTo('#form_volume');
+
 		$.get('/imageList', function(data, status){
 			if('success' == status){
 				imageList = data.list;
@@ -227,6 +243,19 @@ $(document).ready(function(){
 					}
 					$('<option>' + imageList[i].name + ':' + imageList[i].tag + '</option>').appendTo('#form_image');
 				}
+				//
+			}else{
+				alert(status);
+			}
+		});
+
+		$.get('/volumeList', function(data, status){
+			if('success' == status){
+				volumeList = data.list;
+				for (var i = 0; i < volumeList.length; i++) {
+					$('<option>' + volumeList[i].name + '</option>').appendTo('#form_volume');
+				}
+				//
 			}else{
 				alert(status);
 			}

@@ -31,7 +31,7 @@ exports.containerlist = function(req, res){
 		//hostname: dockerHost,
 		//port: dockerPort,
 		socketPath:socketFile,
-		path: '/containers/json?all=1',
+		path: '/' + dockerApiVersion + '/containers/json?all=1',
 		method: 'GET'
 	};
 
@@ -57,11 +57,17 @@ exports.containerlist = function(req, res){
 					status = 'danger';
 				}
 
-				var name = '---'
+				var name = '---';
 				if(objs[i].Names != undefined){
 					name = objs[i].Names[0].substr(1)
 				}
-				list.push({'sn': i + 1, 'name': name, 'image':objs[i].Image.split(":")[1].substr(0, 12), 'ipAddress': objs[i].IPAddress, 'created':new Date(parseInt(objs[i].Created) * 1000).toLocaleString(), 'status':{'stat': status, 'description':objs[i].Status }});
+				var image = '';
+				if(-1 == objs[i].Image.indexOf('sha256:')){
+					image = objs[i].Image
+				}else{
+					image = objs[i].Image.split("sha256:")[1].substr(0, 12)
+				}
+				list.push({'sn': i + 1, 'name': name, 'image':image, 'ipAddress': objs[i].IPAddress, 'created':new Date(parseInt(objs[i].Created) * 1000).toLocaleString(), 'status':{'stat': status, 'description':objs[i].Status }});
 			}
 			res.send({'list':list});
 		});
@@ -76,7 +82,7 @@ exports.imageList = function(req, res){
 		//hostname: dockerHost,
 		//port: dockerPort,
 		socketPath:socketFile,
-		path: '/images/json',
+		path: '/' + dockerApiVersion + '/images/json',
 		method: 'GET'
 	};
 
@@ -101,6 +107,36 @@ exports.imageList = function(req, res){
 	req_docker.end();
 }
 
+exports.volumeList = function(req, res){
+	var options = {
+		//hostname: dockerHost,
+		//port: dockerPort,
+		socketPath:socketFile,
+		path: '/' + dockerApiVersion + '/volumes',
+		method: 'GET'
+	};
+
+	var req_docker = http.request(options, function(res_docker){
+		var buf = '';
+		res_docker.setEncoding('utf8');
+		res_docker.on('data', function(chunk){
+			buf += chunk;
+		});
+
+		res_docker.on('end', function(){
+			var list = [];
+			var obj = JSON.parse(buf);
+			for (var i = 0; i < obj.Volumes.length; i++) {
+				list.push({'sn': i + 1, 'name': obj.Volumes[i].Name, 'driver': obj.Volumes[i].Driver});
+			}
+			res.send({'list':list});
+		});
+	}).on('error', function(e){
+		console.log(e.message);
+	});
+	req_docker.end();
+}
+
 exports.doContainer = function(req, res){
 	var action = req.body.action;
 	var name = req.body.name;
@@ -116,7 +152,12 @@ exports.doContainer = function(req, res){
 }
 
 exports.createContainer = function(req, res){
-	postCreateContainer(req.body);
+	postCreateContainer(JSON.parse(req.body.data));
+	res.send('processing');
+}
+
+exports.createVolume = function(req, res){
+	postCreateVolume(req.body);
 	res.send('processing');
 }
 
@@ -190,39 +231,103 @@ function postDelContainer(name){
 
 function postCreateContainer(opt){
 	var opt_template = {
-		"Hostname": "",
-		"Domainname": "",
-		"User": "",
-		"Memory": 0,
-		"MemorySwap": 0,
-		"CpuShares": 0,
-		"Cpuset": "",
-		"AttachStdin": false,
-		"AttachStdout": false,
-		"AttachStderr": false,
-		"PortSpecs": null,
-		"ExposedPorts": {},
-		"Tty": true,
-		"OpenStdin": true,
-		"StdinOnce": false,
-		"Env": [],
-		"Cmd": [
-		    "bash"
-		],
-		"Image": "",
-		"Volumes": {},
-		"WorkingDir": "",
-		"Entrypoint": null,
-		"NetworkDisabled": false,
-		"OnBuild": null,
-		"IPAddress": ""
+	    "Hostname": "",
+	    "Domainname": "",
+	    "User": "",
+	    "AttachStdin": false,
+	    "AttachStdout": false,
+	    "AttachStderr": false,
+	    "Tty": false,
+	    "OpenStdin": false,
+	    "StdinOnce": false,
+	    "Env": [],
+	    "Cmd": [
+	        "bash"
+	    ],
+	    "Image": "",
+	    "Volumes": {},
+	    "WorkingDir": "",
+	    "Entrypoint": null,
+	    "OnBuild": null,
+	    "Labels": {},
+	    "HostConfig": {
+	        "Binds": [],
+	        "ContainerIDFile": "",
+	        "LogConfig": {
+	            "Type": "",
+	            "Config": {}
+	        },
+	        "NetworkMode": "default",
+	        "PortBindings": {},
+	        "RestartPolicy": {
+	            "Name": "no",
+	            "MaximumRetryCount": 0
+	        },
+	        "AutoRemove": false,
+	        "VolumeDriver": "",
+	        "VolumesFrom": null,
+	        "CapAdd": null,
+	        "CapDrop": null,
+	        "Dns": [],
+	        "DnsOptions": [],
+	        "DnsSearch": [],
+	        "ExtraHosts": null,
+	        "GroupAdd": null,
+	        "IpcMode": "",
+	        "Cgroup": "",
+	        "Links": null,
+	        "OomScoreAdj": 0,
+	        "PidMode": "",
+	        "Privileged": false,
+	        "PublishAllPorts": false,
+	        "ReadonlyRootfs": false,
+	        "SecurityOpt": null,
+	        "StorageOpt": null,
+	        "UTSMode": "",
+	        "UsernsMode": "",
+	        "ShmSize": 0,
+	        "ConsoleSize": [
+	            0,
+	            0
+	        ],
+	        "Isolation": "",
+	        "CpuShares": 0,
+	        "Memory": 0,
+	        "CgroupParent": "",
+	        "BlkioWeight": 0,
+	        "BlkioWeightDevice": null,
+	        "BlkioDeviceReadBps": null,
+	        "BlkioDeviceWriteBps": null,
+	        "BlkioDeviceReadIOps": null,
+	        "BlkioDeviceWriteIOps": null,
+	        "CpuPeriod": 0,
+	        "CpuQuota": 0,
+	        "CpusetCpus": "",
+	        "CpusetMems": "",
+	        "Devices": [],
+	        "DiskQuota": 0,
+	        "KernelMemory": 0,
+	        "MemoryReservation": 0,
+	        "MemorySwap": 0,
+	        "MemorySwappiness": -1,
+	        "OomKillDisable": false,
+	        "PidsLimit": 0,
+	        "Ulimits": null,
+	        "CpuCount": 0,
+	        "CpuPercent": 0,
+	        "BlkioIOps": 0,
+	        "BlkioBps": 0,
+	        "SandboxSize": 0
+	    },
+	    "NetworkingConfig": {
+	        "EndpointsConfig": {}
+	    }
 	}
 
-	for(x in opt)
-	{
-		if(x in opt_template){
-			opt_template[x] = opt[x];
-		}
+	//populate data
+	opt_template.Image = opt.Image;
+	for (var i = opt.HostConfig.Binds.length - 1; i >= 0; i--) {
+		opt_template.HostConfig.Binds.push(opt.HostConfig.Binds[i])	
 	}
 
 	var postData = JSON.stringify(opt_template);
@@ -258,4 +363,98 @@ function postCreateContainer(opt){
 
 	req.write(postData);
 	req.end();
+}
+
+function postCreateVolume(opt){
+	var opt_template = {
+		"Name":"",
+		"Driver":"local",
+		"DriverOpts":{},
+		"Labels":{}
+	};
+
+	for(x in opt)
+	{
+		if(x in opt_template){
+			opt_template[x] = opt[x];
+		}
+	}
+
+	var postData = JSON.stringify(opt_template);
+	console.log(postData);
+
+	var options = {
+		//hostname: dockerHost,
+		//port: dockerPort,
+		socketPath:socketFile,
+		path: '/' + dockerApiVersion + '/volumes/create',
+		method: 'POST',
+		headers:{
+		    'Content-Type': 'application/json',
+		    'Content-Length': postData.length
+		}
+	};
+
+	var req = http.request(options, function(res){
+		var buf = '';
+		res.setEncoding('utf8');
+		res.on('data', function(chunk){
+			buf += chunk;
+		});
+
+		res.on('end', function(){
+			console.log(buf);
+		});
+	});
+
+	req.on('error', function(e){
+		console.log(e.message);
+	});
+
+	req.write(postData);
+	req.end();
+}
+
+exports.removeVolume = function(req, res){
+	var name = req.params.name;
+
+	var postData = querystring.stringify({});
+	var options = {
+		//hostname: dockerHost,
+		//port: dockerPort,
+		socketPath:socketFile,
+		path: '/' + dockerApiVersion + '/volumes/' + name,
+		method: 'DELETE',
+		headers:{
+		    'Content-Type': 'application/x-www-form-urlencoded',
+		    'Content-Length': postData.length
+		}
+	};
+
+	var req_docker = http.request(options, function(res_docker){
+		var buf = '';
+		res_docker.setEncoding('utf8');
+		res_docker.on('data', function(chunk){
+			buf += chunk;
+		});
+
+		res_docker.on('end', function(){
+			res.end(buf);
+		});
+	});
+
+	req_docker.on('error', function(e){
+		console.log(e.message);
+	});
+
+	req_docker.write(postData);
+	req_docker.end();
+}
+
+exports.volume = function(req, res){
+	res.render('volume');
+}
+
+exports.node = function(req, res){
+	res.send('To be continued...')
 }
